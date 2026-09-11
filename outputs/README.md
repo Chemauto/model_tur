@@ -11,6 +11,6 @@
 
 ## 🚀 复现
 ```bash
-python main.py                  # 训练
-python main.py --mode infer     # 生成
+python train.py     # 训练
+python infer.py     # 生成
 ```

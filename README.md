@@ -14,10 +14,9 @@
 ## 目录结构
 
 ```
-configs/config.yaml   # 唯一配置文件: 数据集 / 训练或推理 / 模型超参
-main.py               # 唯一入口
-train.py              # 各模型共用的训练循环
-infer.py              # 推理: 每个模型展示各自特性
+configs/config.yaml   # 唯一配置文件: 数据集 / 模型 / 超参
+train.py              # 训练入口
+infer.py              # 推理入口
 models/
   ae.py  vae.py  cvae.py   # 三者共享 blocks.py 中的 Encoder/Decoder
   ddpm.py  unet.py         # 扩散模型 (噪声调度 + DDPM/DDIM 采样) 与去噪 UNet
@@ -31,23 +30,24 @@ outputs/                   # 训练产物: outputs/<模型>/<数据集>/
 
 ```bash
 pip install -r requirements.txt
-python main.py                 # 按 config.yaml 默认设置训练 (mnist + vae)
+python train.py                # 按 config.yaml 默认设置训练 (mnist + cvae)
+python infer.py --digits 3,7   # 推理: 指定生成数字 3 和 7
+python infer.py                # 不指定则 10 类各生成一行
 ```
 
 所有实验通过编辑 `configs/config.yaml` 驱动：
 
 1. **选数据集**（顶部 `dataset:`）：`mnist` / `fashion`（CPU 可训）、`cifar10`（需 GPU）
-2. **选运行方式**（`run:`）：`mode: train|infer`，`model: ae|vae|cvae|ddpm`
-3. 临时切换可不动配置：`python main.py --mode infer`，CVAE 还可 `--digits 3,7`
+2. **选模型**（`run.model:`）：`ae` / `vae` / `cvae` / `ddpm`
 
-典型流程：
+典型流程（以 DDPM 为例）：把 `run.model` 改为 `ddpm` 后
 
 ```bash
-# 把 run.model 改为 cvae 后
-python main.py                              # 训练
-python main.py --mode infer --digits 3,7    # 指定生成数字 3 和 7, 每个数字一行
-python main.py --mode infer                 # 不指定则 10 类各生成一行
+python train.py    # 训练
+python infer.py    # 生成样本
 ```
+
+仓库自带已训练好的 CVAE 权重（`outputs/cvae/mnist/model.pt`），克隆后可直接运行 `python infer.py --digits 3,7` 查看效果。
 
 ## 输出说明
 

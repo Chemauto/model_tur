@@ -1,7 +1,7 @@
 # ============================================================
-# 生成模型实验配置 (AE / VAE / DDPM)
-# 运行: python main.py  或  python main.py --config configs/config.yaml
-# 临时切换模式: python main.py --mode infer
+# 生成模型实验配置 (AE / VAE / CVAE / DDPM)
+# 训练: python train.py
+# 推理: python infer.py  (CVAE 可加 --digits 3,7)
 # ============================================================
 
 # ---------- 1. 数据集选择: 从下方 datasets 中任选一个名字 ----------
@@ -23,8 +23,7 @@ datasets:                      # 所有可用数据集的定义
 
 # ---------- 2. 运行方式 ----------
 run:
-  mode: train                  # train=训练 / infer=推理(生成样本)
-  model: vae                   # ae / vae / ddpm
+  model: cvae                  # ae / vae / cvae / ddpm
   seed: 42
   device: auto                 # auto / cpu / cuda
 
@@ -44,7 +43,7 @@ infer:
   sampler: ddim                # ddpm=完整 1000 步 / ddim=加速采样 (仅 ddpm 用)
   ddim_steps: 50               # ddim 采样步数
   n_vis_steps: 8               # 去噪过程可视化记录的帧数 (仅 ddpm 用)
-  digits: []                   # CVAE 指定生成的数字, 留空=10 类各一行; 也可命令行 --digits 3,7
+  digits: []                   # CVAE 指定生成的数字, 留空=10 类各一行; 命令行 --digits 3,7 可覆盖
 
 # ---------- 5. 各模型超参数 ----------
 model:

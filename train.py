@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from models import build_model
 from models.ddpm import EMA
-from utils.common import get_device, plot_loss, save_grid
+from utils.common import get_device, plot_loss, save_grid, set_seed
 from utils.data import get_dataloaders
 
 
@@ -30,6 +30,7 @@ def visualize(model, name, test_dl, device, out_dir, ep, ema=None):
 
 
 def train(cfg):
+    set_seed(cfg["run"]["seed"])
     name = cfg["run"]["model"]
     spec = cfg["datasets"][cfg["dataset"]]
     tcfg = cfg["train"]
@@ -69,3 +70,14 @@ def train(cfg):
         ckpt["ema"] = {f"unet.{k}": v for k, v in ema.state_dict().items()}
     torch.save(ckpt, os.path.join(out_dir, "model.pt"))
     print(f"training done. checkpoint -> {os.path.join(out_dir, 'model.pt')}")
+
+
+if __name__ == "__main__":
+    import argparse
+    import yaml
+
+    ap = argparse.ArgumentParser(description="训练 (模型/数据集在 config.yaml 中选择)")
+    ap.add_argument("--config", default="configs/config.yaml")
+    args = ap.parse_args()
+    with open(args.config, encoding="utf-8") as f:
+        train(yaml.safe_load(f))

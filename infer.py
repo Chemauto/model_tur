@@ -2,12 +2,13 @@ import os
 
 import torch
 
-from utils.common import get_device, save_grid
+from utils.common import get_device, save_grid, set_seed
 from utils.data import get_dataloaders
 
 
 @torch.no_grad()
 def infer(cfg):
+    set_seed(cfg["run"]["seed"])
     name = cfg["run"]["model"]
     icfg = cfg["infer"]
     device = get_device(cfg["run"]["device"])
@@ -65,3 +66,18 @@ def infer(cfg):
         print("结论: DDPM 迭代去噪生成, 质量明显高于 VAE")
 
     print(f"results saved to {out_dir}")
+
+
+if __name__ == "__main__":
+    import argparse
+    import yaml
+
+    ap = argparse.ArgumentParser(description="推理 (模型/数据集在 config.yaml 中选择)")
+    ap.add_argument("--config", default="configs/config.yaml")
+    ap.add_argument("--digits", type=str, help="CVAE 指定生成的数字, 逗号分隔, 如 3,7")
+    args = ap.parse_args()
+    with open(args.config, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    if args.digits:
+        cfg["infer"]["digits"] = [int(d) for d in args.digits.split(",")]
+    infer(cfg)
