@@ -26,45 +26,67 @@ utils/
 outputs/                   # 训练产物: outputs/<模型>/<数据集>/
 ```
 
-## 🚀 快速开始
+## 🏋️ 训练
+
+**第 1 步：安装依赖**（只需一次）
 
 ```bash
 pip install -r requirements.txt
-python train.py                # 🏋️ 按 config.yaml 默认设置训练 (mnist + cvae)
-python infer.py --digits 3,7   # 🎨 推理: 指定生成数字 3 和 7
-python infer.py                # 🎲 不指定则 10 类各生成一行
 ```
 
-所有实验通过编辑 `configs/config.yaml` 驱动：
+**第 2 步：在 `configs/config.yaml` 里选数据集和模型**
 
-1. 📊 **选数据集**（顶部 `dataset:`）：`mnist` / `fashion`（CPU 可训）、`cifar10`（需 GPU）
-2. 🧠 **选模型**（`run.model:`）：`ae` / `vae` / `cvae` / `ddpm`
+```yaml
+dataset: mnist        # 📊 可选: mnist / fashion (CPU 可训) / cifar10 (需 GPU)
+run:
+  model: cvae         # 🧠 可选: ae / vae / cvae / ddpm
+```
 
-典型流程（以 DDPM 为例）：把 `run.model` 改为 `ddpm` 后
+**第 3 步：启动训练**
 
 ```bash
-python train.py    # 🏋️ 训练
-python infer.py    # 🎨 生成样本
+python train.py
 ```
 
-💾 仓库自带已训练好的 CVAE 权重（`outputs/cvae/mnist/model.pt`），克隆后可直接运行 `python infer.py --digits 3,7` 查看效果。
+**第 4 步：查看训练产物** `outputs/<模型>/<数据集>/`
 
-## 📦 输出说明
+- 💾 `model.pt` —— 模型权重（DDPM 额外含 EMA）
+- 📉 `loss.png` —— 损失曲线
+- 🖼️ `recon_ep*.png` / `preview_ep*.png` —— 训练过程可视化
 
-训练产物在 `outputs/<模型>/<数据集>/`：`model.pt`（权重）、`loss.png`（损失曲线）、训练中的重构/预览图。
+> ⏱️ 换模型训练只需改 `run.model` 一个字段；换数据集只需改 `dataset` 一个字段。
 
-推理产物：
+## 🎨 推理
 
-- 🔁 **AE**：`ae_recon.png`（重构对比）、`ae_random.png`（随机采样失败现场）
-- 🌊 **VAE**：`vae_samples.png`（随机采样）、`vae_interp.png`（隐空间插值）
-- 🏷️ **CVAE**：`cvae_samples.png`（按指定数字生成，一行一类）
-- 🌀 **DDPM**：`ddpm_samples.png`（生成样本）、`ddpm_steps.png`（去噪过程逐帧）
+**第 1 步：确认有权重**
+
+- 训练过的模型：`outputs/<模型>/<数据集>/model.pt` 已存在即可
+- 💾 仓库自带已训练好的 CVAE 权重，克隆后无需训练即可体验
+
+**第 2 步：把 `run.model` 改成要推理的模型**（须与权重对应的模型一致）
+
+**第 3 步：运行推理**
+
+```bash
+python infer.py                # 🎲 通用推理: AE/VAE 展示采样与插值, DDPM 展示去噪过程
+python infer.py --digits 3,7   # 🏷️ 仅 CVAE: 指定生成数字 3 和 7, 每个数字一行
+python infer.py                # 🏷️ CVAE 不指定数字则 0-9 各生成一行
+```
+
+**第 4 步：查看推理产物**（保存在权重同目录）
+
+| 模型 | 生成图片 | 内容 |
+|------|----------|------|
+| 🔁 AE | `ae_recon.png` / `ae_random.png` | 重构对比 / 随机采样失败现场 |
+| 🌊 VAE | `vae_samples.png` / `vae_interp.png` | 随机采样 / 隐空间插值 |
+| 🏷️ CVAE | `cvae_samples.png` | 按指定数字生成，一行一类 |
+| 🌀 DDPM | `ddpm_samples.png` / `ddpm_steps.png` | 生成样本 / 去噪过程逐帧 |
 
 ## ⏱️ CPU 训练耗时参考（MNIST）
 
-AE 约 2 分钟/epoch，VAE / CVAE 约 3 分钟/epoch，DDPM（base_channels=64）约 20 分钟/epoch。
-🐢 CPU 跑 DDPM 建议把 `model.ddpm.base_channels` 降到 `32`（效果略降，速度约 3 倍）。
-⚡ CIFAR-10 请使用 GPU（本机或 Colab），配置无需改动，换 `dataset: cifar10` 即可。
+- 🔁 AE 约 2 分钟/epoch；🌊 VAE / 🏷️ CVAE 约 3 分钟/epoch；🌀 DDPM（base_channels=64）约 20 分钟/epoch
+- 🐢 CPU 跑 DDPM 建议把 `model.ddpm.base_channels` 降到 `32`（效果略降，速度约 3 倍）
+- ⚡ CIFAR-10 请使用 GPU（本机或 Colab），配置无需改动，换 `dataset: cifar10` 即可
 
 ## 🛠️ 常见问题
 
